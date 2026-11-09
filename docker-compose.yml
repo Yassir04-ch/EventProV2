@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: eventprov2_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: eventprov2_db
+      POSTGRES_USER: yassirch
+      POSTGRES_PASSWORD: yassir123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yassirch -d eventprov2_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: eventprov2_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: yassir@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: yassir123
+    ports:
+      - "8081:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
