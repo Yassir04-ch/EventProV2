@@ -7,10 +7,6 @@ import ma.eventpro.exception.ConflictException;
 import ma.eventpro.exception.ReservationExpired;
 import ma.eventpro.exception.ValidationException;
 import ma.eventpro.exception.ResourceNotFoundException;
-<<<<<<< HEAD
-import org.springframework.dao.DataIntegrityViolationException;
-=======
->>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
