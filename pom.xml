@@ -109,6 +109,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
             <!--jacoco plugin-->
 
             <plugin>
@@ -143,6 +144,14 @@
                         </goals>
 
                         <configuration>
+
+                            <excludes>
+                                <exclude>ma/eventpro/mapper/**</exclude>
+                                <exclude>ma/eventpro/controller/**</exclude>
+                                <exclude>ma/eventpro/advice/**</exclude>
+                            </excludes>
+
+
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
