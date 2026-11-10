@@ -5,7 +5,10 @@ import lombok.RequiredArgsConstructor;
 import ma.eventpro.dto.request.LigneReservationRequest;
 import ma.eventpro.dto.request.ReservationCreateRequest;
 import ma.eventpro.dto.response.ReservationResponse;
+<<<<<<< HEAD
 import ma.eventpro.dto.response.UtilisateurResponse;
+=======
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
 import ma.eventpro.entity.*;
 import ma.eventpro.entity.enums.DiscountType;
 import ma.eventpro.entity.enums.EventStatus;
@@ -16,7 +19,10 @@ import ma.eventpro.repository.CategorieBilletRepository;
 import ma.eventpro.repository.ClientRepository;
 import ma.eventpro.repository.LigneReservationRepository;
 import ma.eventpro.repository.ReservationRepository;
+<<<<<<< HEAD
 import org.springframework.data.domain.PageRequest;
+=======
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -185,5 +191,8 @@ public class ReservationService {
         return reservationRepository.findByClientId(clientId).stream()
                 .map(reservationMapper::toResponse).toList();
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
 }

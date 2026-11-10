@@ -1,9 +1,14 @@
 package ma.eventpro;
 
+<<<<<<< HEAD
 import ma.eventpro.dto.request.CategorieBilletRequest;
 import ma.eventpro.dto.request.EventCreateRequest;
 import ma.eventpro.dto.response.EvenementResponse;
 import ma.eventpro.entity.CategorieBillet;
+=======
+import ma.eventpro.dto.request.EventCreateRequest;
+import ma.eventpro.dto.response.EvenementResponse;
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
 import ma.eventpro.entity.Evenement;
 import ma.eventpro.entity.Organisateur;
 import ma.eventpro.entity.Reservation;
@@ -24,9 +29,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+=======
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -70,6 +78,7 @@ public class EventServiceTest {
         evenement.setId(1L);
         reservation.setStatus(ReservationStatus.CONFIRMED);
         evenement.setOrganisateur(organisateur);
+<<<<<<< HEAD
         evenement.setStatus(EventStatus.DRAFT);
         CategorieBillet categorie = new CategorieBillet();
         categorie.setName("Standard");
@@ -78,6 +87,9 @@ public class EventServiceTest {
         categorie.setQuotaMaxParClient(5);
         categorie.setEvenement(evenement);
         evenement.setCategories(new ArrayList<>(List.of(categorie)));
+=======
+        evenement.setStatus(EventStatus.PUBLISHED);
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
     }
 
     @Test
@@ -85,6 +97,7 @@ public class EventServiceTest {
         EventCreateRequest request = mock(EventCreateRequest.class);
 
         UUID id = UUID.randomUUID();
+<<<<<<< HEAD
 
         LocalDateTime start = LocalDateTime.now().plusDays(10);
         LocalDateTime end = start.plusDays(2);
@@ -99,6 +112,8 @@ public class EventServiceTest {
         when(request.getStartDate()).thenReturn(start);
         when(request.getEndDate()).thenReturn(end);
         when(request.getCategories()).thenReturn(List.of(categorie));
+=======
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
         when(request.getOrganisateurId()).thenReturn(id);
         when(organisateurRepository.findById(id)).thenReturn(Optional.of(organisateur));
         when(evenementMapper.toEntity(request)).thenReturn(evenement);

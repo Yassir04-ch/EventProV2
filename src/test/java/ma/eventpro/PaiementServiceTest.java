@@ -39,8 +39,11 @@ public class PaiementServiceTest {
     @Mock
     BilletRepository billetRepository;
     @Mock
+<<<<<<< HEAD
     BilletMapper billetMapper;
     @Mock
+=======
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
     CategorieBilletRepository categorieBilletRepository;
     @Mock
     PaiementMapper paiementMapper;
@@ -74,9 +77,14 @@ public class PaiementServiceTest {
         Long reservationId = 1L;
         when(request.getReservationId()).thenReturn(reservationId);
         when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+<<<<<<< HEAD
         when(request.getAmount()).thenReturn(new BigDecimal("200.00"));
         when(paiementRepository.save(any(Paiement.class))).thenReturn(paiement);
         when(paiementMapper.toResponse(paiement)).thenReturn(response);
+=======
+        when(paiementMapper.toResponse(any(Paiement.class))).thenReturn(response);
+        when(request.getAmount()).thenReturn(new BigDecimal("200.00"));
+>>>>>>> 6b71b110d2d3209966e0aa1e770fdc2fbcac682b
         PaiementResponse result = paiementService.createPaiement(request);
         assertNotNull(result);
         assertSame(response , result);
