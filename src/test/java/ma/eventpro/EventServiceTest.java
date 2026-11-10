@@ -1,22 +1,14 @@
+
 package ma.eventpro;
 
-import ma.eventpro.dto.request.CategorieBilletRequest;
-import ma.eventpro.dto.request.EventCreateRequest;
+import ma.eventpro.dto.request.*;
 import ma.eventpro.dto.response.EvenementResponse;
-import ma.eventpro.entity.CategorieBillet;
-import ma.eventpro.entity.Evenement;
-import ma.eventpro.entity.Organisateur;
-import ma.eventpro.entity.Reservation;
-import ma.eventpro.entity.enums.EventStatus;
-import ma.eventpro.entity.enums.ReservationStatus;
-import ma.eventpro.exception.EventNotFound;
-import ma.eventpro.exception.OrganisateurNotFound;
+import ma.eventpro.entity.*;
+import ma.eventpro.entity.enums.*;
+import ma.eventpro.exception.*;
 import ma.eventpro.mapper.EvenementMapper;
-import ma.eventpro.repository.EvenementRepostory;
-import ma.eventpro.repository.OrganisateurRepository;
-import ma.eventpro.repository.ReservationRepository;
-import ma.eventpro.service.EventService;
-import ma.eventpro.service.RemboursementService;
+import ma.eventpro.repository.*;
+import ma.eventpro.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,16 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class EventServiceTest {
+class EventServiceTest {
 
     @Mock
     private EvenementRepostory evenementRepostory;
@@ -47,10 +36,11 @@ public class EventServiceTest {
     private EvenementMapper evenementMapper;
 
     @Mock
-    private RemboursementService remboursementService;
+    private ReservationRepository reservationRepository;
 
     @Mock
-    private ReservationRepository reservationRepository;
+    private RemboursementService remboursementService;
+
     @InjectMocks
     private EventService eventService;
 
@@ -59,152 +49,528 @@ public class EventServiceTest {
     private EvenementResponse response;
     private Reservation reservation;
 
+    private UUID organisateurId;
+
     @BeforeEach
     void setUp() {
-        UUID organisateurId = UUID.randomUUID();
+
+        organisateurId = UUID.randomUUID();
+
         organisateur = new Organisateur();
         organisateur.setId(organisateurId);
+
         evenement = new Evenement();
-        response = new EvenementResponse();
-        reservation = new Reservation();
         evenement.setId(1L);
-        reservation.setStatus(ReservationStatus.CONFIRMED);
         evenement.setOrganisateur(organisateur);
         evenement.setStatus(EventStatus.DRAFT);
+
         CategorieBillet categorie = new CategorieBillet();
         categorie.setName("Standard");
         categorie.setPrixUnitaire(BigDecimal.valueOf(100));
         categorie.setQuantiteTotale(50);
         categorie.setQuotaMaxParClient(5);
         categorie.setEvenement(evenement);
+
         evenement.setCategories(new ArrayList<>(List.of(categorie)));
-        evenement.setStatus(EventStatus.PUBLISHED);
+
+        response = new EvenementResponse();
+
+        reservation = new Reservation();
+        reservation.setStatus(ReservationStatus.CONFIRMED);
     }
 
     @Test
     void createEvent() {
+
         EventCreateRequest request = mock(EventCreateRequest.class);
 
-        UUID id = UUID.randomUUID();
         LocalDateTime start = LocalDateTime.now().plusDays(10);
-        LocalDateTime end = start.plusDays(2);
 
         CategorieBilletRequest categorie = CategorieBilletRequest.builder()
-                .name("Standard")
+                .name(" Standard ")
                 .prixUnitaire(BigDecimal.valueOf(100))
                 .quantiteTotale(50)
                 .quotaMaxParClient(5)
                 .build();
 
+        when(request.getOrganisateurId()).thenReturn(organisateurId);
         when(request.getStartDate()).thenReturn(start);
-        when(request.getEndDate()).thenReturn(end);
-        when(request.getCategories()).thenReturn(List.of(categorie));
-        when(request.getOrganisateurId()).thenReturn(id);
-        when(organisateurRepository.findById(id)).thenReturn(Optional.of(organisateur));
+        when(request.getEndDate()).thenReturn(start.plusDays(2));
+        when(request.getSalesOpeningDate()).thenReturn(null);
+        when(request.getSalesClosingDate()).thenReturn(null);
+        when(request.getCategories()).thenReturn(new ArrayList<>(List.of(categorie)));
+
+        when(organisateurRepository.findById(organisateurId))
+                .thenReturn(Optional.of(organisateur));
+
         when(evenementMapper.toEntity(request)).thenReturn(evenement);
         when(evenementRepostory.save(evenement)).thenReturn(evenement);
         when(evenementMapper.toResponse(evenement)).thenReturn(response);
+
         EvenementResponse result = eventService.createEvent(request);
-        assertNotNull(result);
+
         assertSame(response, result);
         assertSame(organisateur, evenement.getOrganisateur());
+        assertEquals("Standard", categorie.getName());
 
-        verify(organisateurRepository).findById(id);
-        verify(evenementMapper).toEntity(request);
         verify(evenementRepostory).save(evenement);
         verify(evenementMapper).toResponse(evenement);
     }
 
     @Test
-    void createEvenWhenOrganisateurNotFound() {
+    void createEventWhenOrganisateurNotFound() {
+
         EventCreateRequest request = mock(EventCreateRequest.class);
-        UUID id = UUID.randomUUID();
-        when(request.getOrganisateurId()).thenReturn(id);
-        when(organisateurRepository.findById(id)).thenReturn(Optional.empty());
-        assertThrows(OrganisateurNotFound.class, () -> eventService.createEvent(request));
-        verify(organisateurRepository).findById(id);
-        verifyNoInteractions(evenementMapper);
+
+        when(request.getOrganisateurId()).thenReturn(organisateurId);
+
+        when(organisateurRepository.findById(organisateurId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(OrganisateurNotFound.class,
+                () -> eventService.createEvent(request));
+
         verify(evenementRepostory, never()).save(any());
+        verifyNoInteractions(evenementMapper);
     }
 
     @Test
+    void createEventWhenStartDateIsInPast() {
+
+        EventCreateRequest request = mock(EventCreateRequest.class);
+
+        when(request.getOrganisateurId()).thenReturn(organisateurId);
+        when(organisateurRepository.findById(organisateurId))
+                .thenReturn(Optional.of(organisateur));
+
+        when(request.getStartDate()).thenReturn(LocalDateTime.now().minusDays(1));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.createEvent(request));
+
+        verify(evenementMapper, never()).toEntity(any());
+    }
+
+    @Test
+    void createEventWhenEndDateIsBeforeStartDate() {
+
+        EventCreateRequest request = mock(EventCreateRequest.class);
+
+        LocalDateTime start = LocalDateTime.now().plusDays(10);
+
+        when(request.getOrganisateurId()).thenReturn(organisateurId);
+        when(organisateurRepository.findById(organisateurId))
+                .thenReturn(Optional.of(organisateur));
+
+        when(request.getStartDate()).thenReturn(start);
+        when(request.getEndDate()).thenReturn(start.minusDays(1));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.createEvent(request));
+    }
+
+    @Test
+    void createEventWhenSalesClosingBeforeOpening() {
+
+        EventCreateRequest request = mock(EventCreateRequest.class);
+
+        LocalDateTime start = LocalDateTime.now().plusDays(10);
+
+        when(request.getOrganisateurId()).thenReturn(organisateurId);
+        when(organisateurRepository.findById(organisateurId))
+                .thenReturn(Optional.of(organisateur));
+
+        when(request.getStartDate()).thenReturn(start);
+        when(request.getEndDate()).thenReturn(start.plusDays(2));
+        when(request.getSalesOpeningDate()).thenReturn(start.minusDays(5));
+        when(request.getSalesClosingDate()).thenReturn(start.minusDays(6));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.createEvent(request));
+    }
+
+    @Test
+    void createEventWhenSalesClosingAfterEventStart() {
+
+        EventCreateRequest request = mock(EventCreateRequest.class);
+
+        LocalDateTime start = LocalDateTime.now().plusDays(10);
+
+        when(request.getOrganisateurId()).thenReturn(organisateurId);
+        when(organisateurRepository.findById(organisateurId))
+                .thenReturn(Optional.of(organisateur));
+
+        when(request.getStartDate()).thenReturn(start);
+        when(request.getEndDate()).thenReturn(start.plusDays(2));
+        when(request.getSalesOpeningDate()).thenReturn(start.minusDays(5));
+        when(request.getSalesClosingDate()).thenReturn(start.plusDays(1));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.createEvent(request));
+    }
+
+    @Test
+    void createEventWhenCategoriesHaveDuplicateNames() {
+
+        EventCreateRequest request = mock(EventCreateRequest.class);
+
+        LocalDateTime start = LocalDateTime.now().plusDays(10);
+
+        CategorieBilletRequest first = CategorieBilletRequest.builder()
+                .name("Standard")
+                .build();
+
+        CategorieBilletRequest second = CategorieBilletRequest.builder()
+                .name(" STANDARD ")
+                .build();
+
+        when(request.getOrganisateurId()).thenReturn(organisateurId);
+        when(organisateurRepository.findById(organisateurId))
+                .thenReturn(Optional.of(organisateur));
+
+        when(request.getStartDate()).thenReturn(start);
+        when(request.getEndDate()).thenReturn(start.plusDays(2));
+        when(request.getSalesOpeningDate()).thenReturn(null);
+        when(request.getSalesClosingDate()).thenReturn(null);
+        when(request.getCategories()).thenReturn(List.of(first, second));
+
+        assertThrows(ConflictException.class,
+                () -> eventService.createEvent(request));
+
+        verify(evenementMapper, never()).toEntity(any());
+    }
+
+
+    @Test
     void publishEvent() {
-        when(evenementRepostory.findById(1L)).thenReturn(Optional.of(evenement));
-        when(evenementMapper.toResponse(evenement)).thenReturn(response);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        when(evenementMapper.toResponse(evenement))
+                .thenReturn(response);
+
         EvenementResponse result = eventService.publishEvent(1L);
-        assertNotNull(result);
+
+        assertSame(response, result);
         assertEquals(EventStatus.PUBLISHED, evenement.getStatus());
-        verify(evenementRepostory).findById(1L);
+
         verify(evenementMapper).toResponse(evenement);
     }
 
     @Test
     void publishEventWhenEventNotFound() {
-        when(evenementRepostory.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(EventNotFound.class, () -> eventService.publishEvent(99L));
-        verify(evenementRepostory).findById(99L);
+
+        when(evenementRepostory.findById(99L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(EventNotFound.class,
+                () -> eventService.publishEvent(99L));
+
         verifyNoInteractions(evenementMapper);
     }
 
     @Test
-    void cancelEventEventSuccessfully() {
-        when(evenementRepostory.findById(1L)).thenReturn(Optional.of(evenement));
-        when(evenementMapper.toResponse(evenement)).thenReturn(response);
+    void publishEventWhenStatusIsNotDraft() {
+
+        evenement.setStatus(EventStatus.PUBLISHED);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ConflictException.class,
+                () -> eventService.publishEvent(1L));
+
+        verify(evenementMapper, never()).toResponse(any());
+    }
+
+    @Test
+    void publishEventWhenCategoriesAreEmpty() {
+
+        evenement.setCategories(new ArrayList<>());
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ConflictException.class,
+                () -> eventService.publishEvent(1L));
+    }
+
+
+    @Test
+    void cancelEventSuccessfully() {
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        when(evenementMapper.toResponse(evenement))
+                .thenReturn(response);
+
         EvenementResponse result = eventService.cancelEvent(1L);
-        assertNotNull(result);
+
+        assertSame(response, result);
         assertEquals(EventStatus.CANCELED, evenement.getStatus());
-        verify(evenementRepostory).findById(1L);
-        verify(evenementMapper).toResponse(evenement);
     }
 
     @Test
     void cancelEventWhenEventNotFound() {
-        when(evenementRepostory.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(EventNotFound.class, () -> eventService.cancelEvent(99L));
-        verify(evenementRepostory).findById(99L);
-        verifyNoInteractions(evenementMapper);
+
+        when(evenementRepostory.findById(99L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(EventNotFound.class,
+                () -> eventService.cancelEvent(99L));
     }
 
     @Test
+    void cancelEventWhenAlreadyCanceled() {
+
+        evenement.setStatus(EventStatus.CANCELED);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ConflictException.class,
+                () -> eventService.cancelEvent(1L));
+    }
+
+    @Test
+    void cancelEventWhenCompleted() {
+
+        evenement.setStatus(EventStatus.COMPLETED);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ConflictException.class,
+                () -> eventService.cancelEvent(1L));
+    }
+
+
+    @Test
     void getPublishedEvents() {
-        when(evenementRepostory.findByStatus(EventStatus.PUBLISHED)).thenReturn(List.of(evenement));
-        when(evenementMapper.toResponse(evenement)).thenReturn(response);
+
+        when(evenementRepostory.findByStatus(EventStatus.PUBLISHED))
+                .thenReturn(List.of(evenement));
+
+        when(evenementMapper.toResponse(evenement))
+                .thenReturn(response);
 
         List<EvenementResponse> result = eventService.getPublishedEvents();
 
         assertEquals(1, result.size());
         assertSame(response, result.get(0));
-        verify(evenementRepostory).findByStatus(EventStatus.PUBLISHED);
-        verify(evenementMapper).toResponse(evenement);
     }
 
     @Test
+    void getPublishedEventsWhenEmpty() {
+
+        when(evenementRepostory.findByStatus(EventStatus.PUBLISHED))
+                .thenReturn(Collections.emptyList());
+
+        List<EvenementResponse> result = eventService.getPublishedEvents();
+
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(evenementMapper);
+    }
+
+
+    @Test
     void getById() {
-        when(evenementRepostory.findById(1L)).thenReturn(Optional.of(evenement));
-        when(evenementMapper.toResponse(evenement)).thenReturn(response);
-        EvenementResponse result = eventService.getById(1L);
-        assertNotNull(result);
-        assertSame(response, result);
-        verify(evenementRepostory).findById(1L);
-        verify(evenementMapper).toResponse(evenement);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        when(evenementMapper.toResponse(evenement))
+                .thenReturn(response);
+
+        assertSame(response, eventService.getById(1L));
     }
 
     @Test
     void getByIdWhenEventNotFound() {
-        when(evenementRepostory.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(EventNotFound.class, () -> eventService.getById(99L));
-        verify(evenementRepostory).findById(99L);
+
+        when(evenementRepostory.findById(99L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(EventNotFound.class,
+                () -> eventService.getById(99L));
+
         verifyNoInteractions(evenementMapper);
     }
 
+
     @Test
-    void annulerEvent(){
-        when(evenementRepostory.findById(1L)).thenReturn(Optional.of(evenement));
-        when(reservationRepository.findByEventIdAndStatus(1L , ReservationStatus.CONFIRMED))
+    void annulerEventSuccessfully() {
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        when(reservationRepository.findByEventIdAndStatus(
+                1L, ReservationStatus.CONFIRMED))
                 .thenReturn(List.of(reservation));
-        eventService.annulerEvent(1L ,organisateur.getId());
+
+        eventService.annulerEvent(1L, organisateurId);
+
         assertEquals(EventStatus.CANCELED, evenement.getStatus());
-        verify(evenementRepostory).findById(1L);
-        verify(reservationRepository).findByEventIdAndStatus(1L, ReservationStatus.CONFIRMED);
+
+        verify(remboursementService).returnPlaces(reservation);
+    }
+
+    @Test
+    void annulerEventWhenOrganisateurIsDifferent() {
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.annulerEvent(1L, UUID.randomUUID()));
+
+        verifyNoInteractions(reservationRepository, remboursementService);
+    }
+
+    @Test
+    void annulerEventWhenAlreadyCanceled() {
+
+        evenement.setStatus(EventStatus.CANCELED);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.annulerEvent(1L, organisateurId));
+    }
+
+    @Test
+    void annulerEventWhenCompleted() {
+
+        evenement.setStatus(EventStatus.COMPLETED);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.annulerEvent(1L, organisateurId));
+    }
+
+    @Test
+    void annulerEventWhenEventNotFound() {
+
+        when(evenementRepostory.findById(99L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(EventNotFound.class,
+                () -> eventService.annulerEvent(99L, organisateurId));
+    }
+
+    @Test
+    void annulerEventWhenNoConfirmedReservations() {
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        when(reservationRepository.findByEventIdAndStatus(
+                1L, ReservationStatus.CONFIRMED))
+                .thenReturn(Collections.emptyList());
+
+        eventService.annulerEvent(1L, organisateurId);
+
+        assertEquals(EventStatus.CANCELED, evenement.getStatus());
+
+        verifyNoInteractions(remboursementService);
+    }
+
+
+    @Test
+    void updateEventSuccessfully() {
+
+        EventUpdateRequest request = mock(EventUpdateRequest.class);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        when(evenementMapper.toResponse(evenement))
+                .thenReturn(response);
+
+        EvenementResponse result =
+                eventService.updateEvent(1L, organisateurId, request);
+
+        assertSame(response, result);
+
+        verify(evenementMapper).updateEntity(request, evenement);
+    }
+
+    @Test
+    void updateEventWhenEventNotFound() {
+
+        EventUpdateRequest request = mock(EventUpdateRequest.class);
+
+        when(evenementRepostory.findById(99L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(EventNotFound.class,
+                () -> eventService.updateEvent(99L, organisateurId, request));
+
+        verify(evenementMapper, never()).updateEntity(any(), any());
+    }
+
+    @Test
+    void updateEventWhenOrganisateurIsDifferent() {
+
+        EventUpdateRequest request = mock(EventUpdateRequest.class);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.updateEvent(1L, UUID.randomUUID(), request));
+
+        verify(evenementMapper, never()).updateEntity(any(), any());
+    }
+
+    @Test
+    void updateEventWhenStatusIsNotDraft() {
+
+        evenement.setStatus(EventStatus.PUBLISHED);
+
+        EventUpdateRequest request = mock(EventUpdateRequest.class);
+
+        when(evenementRepostory.findById(1L))
+                .thenReturn(Optional.of(evenement));
+
+        assertThrows(ValidationException.class,
+                () -> eventService.updateEvent(1L, organisateurId, request));
+
+        verify(evenementMapper, never()).updateEntity(any(), any());
+    }
+
+
+    @Test
+    void getMyEvent() {
+
+        when(evenementRepostory.findByOrganisateurId(organisateurId))
+                .thenReturn(List.of(evenement));
+
+        when(evenementMapper.toResponse(evenement))
+                .thenReturn(response);
+
+        List<EvenementResponse> result =
+                eventService.getMyEvent(organisateurId);
+
+        assertEquals(1, result.size());
+        assertSame(response, result.get(0));
+    }
+
+    @Test
+    void getMyEventWhenEmpty() {
+
+        when(evenementRepostory.findByOrganisateurId(organisateurId))
+                .thenReturn(Collections.emptyList());
+
+        List<EvenementResponse> result =
+                eventService.getMyEvent(organisateurId);
+
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(evenementMapper);
     }
 }
