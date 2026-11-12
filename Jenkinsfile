@@ -4,6 +4,8 @@ pipeline {
     environment {
         JAVA_HOME = '/opt/java17'
         PATH = "/opt/java17/bin:${env.PATH}"
+
+        SPRING_DATASOURCE_URL = 'jdbc:postgresql://postgres:5432/eventpro_db'
     }
 
     stages {
