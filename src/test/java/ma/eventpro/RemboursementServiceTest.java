@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,7 +65,7 @@ class RemboursementServiceTest {
 
         evenement = new Evenement();
         evenement.setId(10L);
-        evenement.setStartDate(LocalDateTime.now().plusDays(4));
+        evenement.setStartDate(Instant.now().plus(4 , ChronoUnit.DAYS));
 
         categorie = new CategorieBillet();
         categorie.setId(1L);
@@ -249,7 +250,7 @@ class RemboursementServiceTest {
     @Test
     void createRemboursementWhenEventStartsInLessThan48Hours() {
 
-        evenement.setStartDate(LocalDateTime.now().plusHours(24));
+        evenement.setStartDate(Instant.now().plus(24 , ChronoUnit.HOURS));
 
         when(paiementRepository.findById(1L))
                 .thenReturn(Optional.of(paiement));
@@ -350,7 +351,7 @@ class RemboursementServiceTest {
     @Test
     void valideDateSuccessfully() {
 
-        evenement.setStartDate(LocalDateTime.now().plusDays(5));
+        evenement.setStartDate(Instant.now().plus(5 , ChronoUnit.DAYS));
 
         assertDoesNotThrow(() ->
                 remboursementService.valideDate(evenement));
@@ -359,7 +360,7 @@ class RemboursementServiceTest {
     @Test
     void valideDateWhenLessThan48Hours() {
 
-        evenement.setStartDate(LocalDateTime.now().plusHours(24));
+        evenement.setStartDate(Instant.now().plus(24 , ChronoUnit.HOURS));
 
         assertThrows(ValidationException.class,
                 () -> remboursementService.valideDate(evenement));
@@ -368,7 +369,7 @@ class RemboursementServiceTest {
     @Test
     void valideDateWhenEventAlreadyStarted() {
 
-        evenement.setStartDate(LocalDateTime.now().minusDays(1));
+        evenement.setStartDate(Instant.now().minus(1 , ChronoUnit.DAYS));
 
         assertThrows(ValidationException.class,
                 () -> remboursementService.valideDate(evenement));

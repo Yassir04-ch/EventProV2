@@ -17,7 +17,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,7 +86,7 @@ class EventServiceTest {
 
         EventCreateRequest request = mock(EventCreateRequest.class);
 
-        LocalDateTime start = LocalDateTime.now().plusDays(10);
+        Instant start = Instant.now().plus(10, ChronoUnit.DAYS);
 
         CategorieBilletRequest categorie = CategorieBilletRequest.builder()
                 .name(" Standard ")
@@ -95,7 +97,7 @@ class EventServiceTest {
 
         when(request.getOrganisateurId()).thenReturn(organisateurId);
         when(request.getStartDate()).thenReturn(start);
-        when(request.getEndDate()).thenReturn(start.plusDays(2));
+        when(request.getEndDate()).thenReturn(start.plus(2 , ChronoUnit.DAYS));
         when(request.getSalesOpeningDate()).thenReturn(null);
         when(request.getSalesClosingDate()).thenReturn(null);
         when(request.getCategories()).thenReturn(new ArrayList<>(List.of(categorie)));
@@ -143,7 +145,7 @@ class EventServiceTest {
         when(organisateurRepository.findById(organisateurId))
                 .thenReturn(Optional.of(organisateur));
 
-        when(request.getStartDate()).thenReturn(LocalDateTime.now().minusDays(1));
+        when(request.getStartDate()).thenReturn(Instant.now().minus(1 , ChronoUnit.DAYS));
 
         assertThrows(ValidationException.class,
                 () -> eventService.createEvent(request));
@@ -156,14 +158,14 @@ class EventServiceTest {
 
         EventCreateRequest request = mock(EventCreateRequest.class);
 
-        LocalDateTime start = LocalDateTime.now().plusDays(10);
+        Instant start = Instant.now().plus(10 , ChronoUnit.DAYS);
 
         when(request.getOrganisateurId()).thenReturn(organisateurId);
         when(organisateurRepository.findById(organisateurId))
                 .thenReturn(Optional.of(organisateur));
 
         when(request.getStartDate()).thenReturn(start);
-        when(request.getEndDate()).thenReturn(start.minusDays(1));
+        when(request.getEndDate()).thenReturn(start.minus(1 , ChronoUnit.DAYS));
 
         assertThrows(ValidationException.class,
                 () -> eventService.createEvent(request));
@@ -174,16 +176,16 @@ class EventServiceTest {
 
         EventCreateRequest request = mock(EventCreateRequest.class);
 
-        LocalDateTime start = LocalDateTime.now().plusDays(10);
+        Instant start = Instant.now().plus(10 , ChronoUnit.DAYS);
 
         when(request.getOrganisateurId()).thenReturn(organisateurId);
         when(organisateurRepository.findById(organisateurId))
                 .thenReturn(Optional.of(organisateur));
 
         when(request.getStartDate()).thenReturn(start);
-        when(request.getEndDate()).thenReturn(start.plusDays(2));
-        when(request.getSalesOpeningDate()).thenReturn(start.minusDays(5));
-        when(request.getSalesClosingDate()).thenReturn(start.minusDays(6));
+        when(request.getEndDate()).thenReturn(start.plus(2 , ChronoUnit.DAYS));
+        when(request.getSalesOpeningDate()).thenReturn(start.minus(5 , ChronoUnit.DAYS));
+        when(request.getSalesClosingDate()).thenReturn(start.minus(6 , ChronoUnit.DAYS));
 
         assertThrows(ValidationException.class,
                 () -> eventService.createEvent(request));
@@ -194,16 +196,16 @@ class EventServiceTest {
 
         EventCreateRequest request = mock(EventCreateRequest.class);
 
-        LocalDateTime start = LocalDateTime.now().plusDays(10);
+        Instant start = Instant.now().plus(10 , ChronoUnit.DAYS);
 
         when(request.getOrganisateurId()).thenReturn(organisateurId);
         when(organisateurRepository.findById(organisateurId))
                 .thenReturn(Optional.of(organisateur));
 
         when(request.getStartDate()).thenReturn(start);
-        when(request.getEndDate()).thenReturn(start.plusDays(2));
-        when(request.getSalesOpeningDate()).thenReturn(start.minusDays(5));
-        when(request.getSalesClosingDate()).thenReturn(start.plusDays(1));
+        when(request.getEndDate()).thenReturn(start.plus(2 , ChronoUnit.DAYS));
+        when(request.getSalesOpeningDate()).thenReturn(start.minus(5 ,ChronoUnit.DAYS));
+        when(request.getSalesClosingDate()).thenReturn(start.plus(1 , ChronoUnit.DAYS));
 
         assertThrows(ValidationException.class,
                 () -> eventService.createEvent(request));
@@ -214,7 +216,7 @@ class EventServiceTest {
 
         EventCreateRequest request = mock(EventCreateRequest.class);
 
-        LocalDateTime start = LocalDateTime.now().plusDays(10);
+        Instant start = Instant.now().plus(10 , ChronoUnit.DAYS);
 
         CategorieBilletRequest first = CategorieBilletRequest.builder()
                 .name("Standard")
@@ -229,7 +231,7 @@ class EventServiceTest {
                 .thenReturn(Optional.of(organisateur));
 
         when(request.getStartDate()).thenReturn(start);
-        when(request.getEndDate()).thenReturn(start.plusDays(2));
+        when(request.getEndDate()).thenReturn(start.plus(2 , ChronoUnit.DAYS));
         when(request.getSalesOpeningDate()).thenReturn(null);
         when(request.getSalesClosingDate()).thenReturn(null);
         when(request.getCategories()).thenReturn(List.of(first, second));

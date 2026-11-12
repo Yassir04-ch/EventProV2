@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ma.eventpro.entity.enums.EventStatus;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,10 +21,10 @@ public class EvenementResponse {
     private String title;
     private String description;
     private String location;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private LocalDateTime salesOpeningDate;
-    private LocalDateTime salesClosingDate;
+    private Instant startDate;
+    private Instant endDate;
+    private Instant salesOpeningDate;
+    private Instant salesClosingDate;
     private EventStatus status;
     private UUID organisateurId;
 }

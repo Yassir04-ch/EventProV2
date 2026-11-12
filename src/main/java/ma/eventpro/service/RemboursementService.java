@@ -87,7 +87,7 @@ public class RemboursementService {
     }
 
     public void valideDate(Evenement evenement){
-        LocalDateTime date = LocalDateTime.now();
+        Instant date = Instant.now();
         long houres = ChronoUnit.HOURS.between(date,evenement.getStartDate());
         if(houres < 48){
             throw new ValidationException("événement commence dans moins de 48 heures");
