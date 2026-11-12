@@ -28,5 +28,18 @@ pipeline {
                 sh 'mvn clean verify'
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube-EventPro') {
+                    sh '''
+                        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
+                        -Dsonar.projectKey=EventPro \
+                        -Dsonar.projectName=EventPro \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                    '''
+                }
+            }
+        }
     }
 }
