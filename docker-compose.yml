@@ -72,11 +72,14 @@ services:
     image: eventpro-jenkins:latest
     container_name: eventpro_jenkins
     restart: unless-stopped
+    group_add:
+      - "0"
     ports:
       - "8080:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   postgres_data:
