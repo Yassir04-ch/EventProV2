@@ -49,5 +49,11 @@ pipeline {
                  }
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -f Dockerfile.app -t eventpro:latest .'
+            }
+        }
     }
 }
