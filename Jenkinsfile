@@ -27,7 +27,7 @@ pipeline {
             steps {
                 sh 'mvn clean verify'
 
-                sh 'find target -type f | grep -E "surefire|failsafe|jacoco|\\.jar$" || true'
+                junit testResults: 'target/surefire-reports/TEST-*.xml'
             }
         }
 
@@ -61,9 +61,6 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true,
-                  testResults:'target/surefile-reports/*.xml'
-
             archiveArtifacts (
                   artifacts: 'target/*.jar,target/site/jacoco/**',
                   allowEmptyArchive: true,
