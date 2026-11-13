@@ -56,4 +56,17 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            junit allowEmptyResults: true,
+                  testResults:'target/surefile-reports/*.xml'
+
+            archiveArtifacts (
+                  artifacts: 'target/*.jar,target/site/jacoco/**',
+                  allowEmtyArchive: true,
+                  fingerprint: true
+            )
+        }
+    }
 }
