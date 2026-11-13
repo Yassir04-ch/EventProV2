@@ -64,7 +64,7 @@ pipeline {
 
             archiveArtifacts (
                   artifacts: 'target/*.jar,target/site/jacoco/**',
-                  allowEmtyArchive: true,
+                  allowEmptyArchive: true,
                   fingerprint: true
             )
         }
