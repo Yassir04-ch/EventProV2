@@ -26,6 +26,8 @@ pipeline {
         stage('Build & Tests') {
             steps {
                 sh 'mvn clean verify'
+
+                sh 'find target -type f | grep -E "surefire|failsafe|jacoco|\\.jar$" || true'
             }
         }
 
