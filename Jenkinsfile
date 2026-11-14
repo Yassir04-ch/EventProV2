@@ -52,9 +52,29 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             steps {
-                sh 'docker build -f Dockerfile.app -t eventpro:latest .'
+                withCredentials([
+                        usernamePassword(
+                                credentialsId: 'dockerhub-eventpro',
+                                usernameVariable: 'DOCKERHUB_USER',
+                                passwordVariable: 'DOCKERHUB_TOKEN'
+                        )
+                ]) {
+                    sh '''
+                         echo "$DOCKERHUB_TOKEN" | docker login \
+                            -u "$DOCKERHUB_USER" --password-stdin
+
+                         docker build -f Dockerfile.app \
+                            -t yassircherqui/eventpro:1.0.0 \
+                            -t yassircherqui/eventpro:latest .
+
+                        docker push yassircherqui/eventpro:1.0.0
+                        docker push yassircherqui/eventpro:latest
+
+                        docker logout
+                    '''
+                }
             }
         }
     }
