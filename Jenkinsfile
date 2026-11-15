@@ -80,6 +80,27 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy with Docker Compose') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh '''
+                    echo "Pulling latest EventPro image..."
+
+                    docker compose -p eventpro -f docker-compose.yml pull app
+
+                    echo "Deploying EventPro..."
+
+                    docker compose -p eventpro -f docker-compose.yml up -d app
+
+                    echo "Checking deployment status..."
+
+                    docker compose -p eventpro -f docker-compose.yml ps app
+                '''
+            }
+        }
     }
 
     post {
