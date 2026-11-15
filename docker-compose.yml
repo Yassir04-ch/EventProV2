@@ -1,10 +1,10 @@
 services:
   postgres:
     image: postgres:17
-    container_name: eventprov2_postgres
+    container_name: eventpro_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: eventprov2_db
+      POSTGRES_DB: eventpro_db
       POSTGRES_USER: yassirch
       POSTGRES_PASSWORD: yassir123
     ports:
@@ -12,14 +12,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U yassirch -d eventprov2_db"]
+      test: ["CMD-SHELL", "pg_isready -U yassirch -d eventpro_db"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: eventprov2_pgadmin
+    container_name: eventpro_pgadmin
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: yassir@gmail.com
@@ -30,5 +30,62 @@ services:
       postgres:
         condition: service_healthy
 
+  sonar-db:
+    image: postgres:17
+    container_name: eventpro_sonarqube_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sonar
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+    volumes:
+      - sonarqube_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: eventpro_sonarqube
+    restart: unless-stopped
+    depends_on:
+      sonar-db:
+        condition: service_healthy
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_temp:/opt/sonarqube/temp
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: eventpro-jenkins:latest
+    container_name: eventpro_jenkins
+    restart: unless-stopped
+    group_add:
+      - "0"
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   postgres_data:
+  sonarqube_postgres:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  sonarqube_temp:
+  jenkins_home:

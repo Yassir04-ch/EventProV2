@@ -22,6 +22,7 @@ import ma.eventpro.repository.OrganisateurRepository;
 import ma.eventpro.repository.ReservationRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -97,18 +98,18 @@ public class EventService {
     }
 
     private void validateDates(EventCreateRequest request) {
-        LocalDateTime start = request.getStartDate();
-        LocalDateTime end = request.getEndDate();
+        Instant start = request.getStartDate();
+        Instant end = request.getEndDate();
 
-        if (!start.isAfter(LocalDateTime.now())) {
+        if (!start.isAfter(Instant.now())) {
             throw new ValidationException("date de début doit étre dans le futur");
         }
         if (!end.isAfter(start)) {
             throw new ValidationException("date de fin doit étre après la date de début");
         }
 
-        LocalDateTime opening = request.getSalesOpeningDate();
-        LocalDateTime closing = request.getSalesClosingDate();
+        Instant opening = request.getSalesOpeningDate();
+        Instant closing = request.getSalesClosingDate();
 
         if (opening != null && closing != null && !closing.isAfter(opening)) {
             throw new ValidationException("cloture des ventes doit étre après l'ouverture");

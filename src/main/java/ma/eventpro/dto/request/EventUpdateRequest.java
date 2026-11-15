@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -18,9 +19,9 @@ public class EventUpdateRequest {
     private String description;
     private String location;
     @Future(message = "La date de début doit étre dans le futur")
-    private LocalDateTime startDate;
+    private Instant startDate;
     @Future(message = "La date de fin doit étre dans le futur")
-    private LocalDateTime endDate;
-    private LocalDateTime salesOpeningDate;
-    private LocalDateTime salesClosingDate;
+    private Instant endDate;
+    private Instant salesOpeningDate;
+    private Instant salesClosingDate;
 }

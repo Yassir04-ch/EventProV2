@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,14 +30,14 @@ public class EventCreateRequest {
     private String location;
 
     @NotNull(message = "La date de début est obligatoire")
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @NotNull(message = "La date de fin est obligatoire")
-    private LocalDateTime endDate;
+    private Instant endDate;
 
-    private LocalDateTime salesOpeningDate;
+    private Instant salesOpeningDate;
 
-    private LocalDateTime salesClosingDate;
+    private Instant salesClosingDate;
 
     @NotEmpty(message = "Un événement doit avoir au moins une catégorie de billets")
     @Valid

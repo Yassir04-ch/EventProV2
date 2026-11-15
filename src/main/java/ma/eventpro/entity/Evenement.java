@@ -32,16 +32,16 @@ public class Evenement
     private String location;
 
     @Column(nullable = false)
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @Column(nullable = false)
-    private LocalDateTime endDate;
+    private Instant endDate;
 
     @Column
-    private LocalDateTime salesOpeningDate;
+    private Instant salesOpeningDate;
 
     @Column
-    private LocalDateTime salesClosingDate;
+    private Instant salesClosingDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
