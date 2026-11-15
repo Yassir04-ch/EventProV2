@@ -81,6 +81,20 @@ services:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
 
+  app:
+    image: yassircherqui/eventpro:1.0.0
+    container_name: eventpro_app
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eventpro_db
+      SPRING_DATASOURCE_USERNAME: yassirch
+      SPRING_DATASOURCE_PASSWORD: yassir123
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   sonarqube_postgres:
