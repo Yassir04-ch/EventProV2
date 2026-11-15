@@ -53,6 +53,9 @@ pipeline {
         }
 
         stage('Docker Build & Push') {
+            when {
+                branch 'master'
+            }
             steps {
                 withCredentials([
                         usernamePassword(
